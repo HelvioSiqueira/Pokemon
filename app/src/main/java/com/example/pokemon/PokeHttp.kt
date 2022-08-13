@@ -19,8 +19,9 @@ object PokeHttp {
 
     val POKE_HTTP_URL = "https://pokeapi.co/api/v2/pokemon?limit=100000&offset=0"
 
+    //Estabelece a coneção a partir da url recebida
     @Throws(IOException::class)
-    private fun connect(urlAddress: String): HttpURLConnection{
+    private fun connect(urlAddress: String): HttpURLConnection {
         val second = 100
         val url = URL(urlAddress)
 
@@ -35,8 +36,9 @@ object PokeHttp {
         return connection
     }
 
+    //Verifica se o dispositivo está conectado a internet
     @RequiresApi(Build.VERSION_CODES.M)
-    fun hasConnection(ctx: Context): Boolean{
+    fun hasConnection(ctx: Context): Boolean {
         val cm = ctx.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 
         val info = cm.activeNetwork
@@ -47,27 +49,30 @@ object PokeHttp {
                 capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)
     }
 
-    fun loadPokemon(): List<Pokemon>{
-
+    //Função principal que faz a conexãoe obtem o json
+    fun loadPokemon(): List<Pokemon> {
         val pokemonList = mutableListOf<Pokemon>()
         val urlListPokemon: List<String>
 
+
+        //Esse primeiro try tenta obter a lista de urls de todos os pokemon
         try {
             val connection = connect(POKE_HTTP_URL)
             val response_code = connection.responseCode
 
-            if(response_code == HttpURLConnection.HTTP_OK){
+            if (response_code == HttpURLConnection.HTTP_OK) {
                 val inputStream = connection.inputStream
                 val json = JSONObject(stramToString(inputStream))
 
-                 urlListPokemon = readUrlPokemon(json)
+                urlListPokemon = readUrlPokemon(json)
 
-                for(i in urlListPokemon.indices){
+                //Irá percorrer todas as url da lista para obter seu respectivo pokemon
+                for (i in urlListPokemon.indices) {
                     try {
                         val connection2 = connect(urlListPokemon[i])
                         val response_code2 = connection2.responseCode
 
-                        if(response_code2 == HttpURLConnection.HTTP_OK){
+                        if (response_code2 == HttpURLConnection.HTTP_OK) {
                             val inputStream2 = connection2.inputStream
                             val json2 = JSONObject(stramToString(inputStream2))
 
@@ -85,16 +90,18 @@ object PokeHttp {
             e.printStackTrace()
         }
 
+        //Retorna uma lista de pokemon(Por enquanto só o nome)
         return pokemonList
     }
 
+    //Carrega o url de todos os pokemon a partir de uma lista de json
     @Throws(JSONException::class)
-    fun readUrlPokemon(json: JSONObject) : List<String>{
+    fun readUrlPokemon(json: JSONObject): List<String> {
         val urlListPokemon = mutableListOf<String>()
 
         val jsonResults = json.getJSONArray("results")
 
-        for (i in 0 until jsonResults.length()){
+        for (i in 0 until jsonResults.length()) {
             val jsonPoke = jsonResults.getJSONObject(i)
             val pokeUrl = jsonPoke.getString("url")
 
@@ -103,23 +110,23 @@ object PokeHttp {
 
         return urlListPokemon
     }
-    @Throws(JSONException::class)
-    fun readPokemonFromList(json: JSONObject): Pokemon{
-        val pokeList = mutableListOf<Pokemon>()
 
+    //Carrega o pokemon a partir do json
+    @Throws(JSONException::class)
+    fun readPokemonFromList(json: JSONObject): Pokemon {
         val jsonNome = json.getString("name")
 
         return Pokemon(jsonNome)
     }
 
     @Throws(IOException::class)
-    private fun stramToString(inputStrem: InputStream): String{
+    private fun stramToString(inputStrem: InputStream): String {
         val buffer = ByteArray(1024)
         val bigBuffer = ByteArrayOutputStream()
 
         var bytesRead: Int
 
-        while (true){
+        while (true) {
             bytesRead = inputStrem.read(buffer)
 
             if (bytesRead == -1) break
