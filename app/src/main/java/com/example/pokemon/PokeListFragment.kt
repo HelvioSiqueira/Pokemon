@@ -35,7 +35,7 @@ class PokeListFragment : Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
-        adapter = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, pokeList)
+        adapter = PokeListAdapter(requireContext(), pokeList)
         listView.emptyView = txtMessage
         listView.adapter = adapter
 

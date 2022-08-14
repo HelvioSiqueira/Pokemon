@@ -97,7 +97,7 @@ object PokeHttp {
 
         val jsonResults = json.getJSONArray("results")
 
-        for (i in 0..151) {
+        for (i in 0..12) {
             val jsonPoke = jsonResults.getJSONObject(i)
             val pokeUrl = jsonPoke.getString("url")
 
