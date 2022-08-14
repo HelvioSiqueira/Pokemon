@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import org.json.JSONException
 import org.json.JSONObject
@@ -96,7 +97,7 @@ object PokeHttp {
 
         val jsonResults = json.getJSONArray("results")
 
-        for (i in 0 until jsonResults.length()) {
+        for (i in 0..151) {
             val jsonPoke = jsonResults.getJSONObject(i)
             val pokeUrl = jsonPoke.getString("url")
 
@@ -111,7 +112,11 @@ object PokeHttp {
     fun readPokemonFromList(json: JSONObject): Pokemon {
         val jsonNome = json.getString("name")
 
-        return Pokemon(jsonNome)
+        val jsonSprite = json.getJSONObject("sprites").getJSONObject("other").getJSONObject("official-artwork").getString("front_default")
+
+        Log.i("HSV", jsonSprite)
+
+        return Pokemon(jsonNome.replaceFirstChar { it.uppercase() }, jsonSprite)
     }
 
     @Throws(IOException::class)

@@ -7,7 +7,7 @@ data class Pokemon(
     //var defense: Int = 0,
     //var specialAtack: Int = 0,
     //var specialDefense: Int = 0,
-    //var imagem: String = ""
+    var imagem: String = ""
 
 ) {
     override fun toString() = nome
