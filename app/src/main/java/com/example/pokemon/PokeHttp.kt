@@ -44,16 +44,13 @@ object PokeHttp {
         val info = cm.activeNetwork
         val capabilities = cm.getNetworkCapabilities(info)
 
-        return capabilities != null &&
-                capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) &&
-                capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)
+        return capabilities != null && capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)
     }
 
     //Função principal que faz a conexãoe obtem o json
     fun loadPokemon(): List<Pokemon> {
         val pokemonList = mutableListOf<Pokemon>()
         val urlListPokemon: List<String>
-
 
         //Esse primeiro try tenta obter a lista de urls de todos os pokemon
         try {
@@ -62,24 +59,22 @@ object PokeHttp {
 
             if (response_code == HttpURLConnection.HTTP_OK) {
                 val inputStream = connection.inputStream
-                val json = JSONObject(stramToString(inputStream))
+                val json = JSONObject(streamToString(inputStream))
 
                 urlListPokemon = readUrlPokemon(json)
 
                 //Irá percorrer todas as url da lista para obter seu respectivo pokemon
-                for (i in urlListPokemon.indices) {
+                for (element in urlListPokemon) {
                     try {
-                        val connection2 = connect(urlListPokemon[i])
+                        val connection2 = connect(element)
                         val response_code2 = connection2.responseCode
 
                         if (response_code2 == HttpURLConnection.HTTP_OK) {
                             val inputStream2 = connection2.inputStream
-                            val json2 = JSONObject(stramToString(inputStream2))
+                            val json2 = JSONObject(streamToString(inputStream2))
 
                             pokemonList.add(readPokemonFromList(json2))
                         }
-
-
                     } catch (e: Exception) {
                         e.printStackTrace()
                     }
@@ -120,7 +115,7 @@ object PokeHttp {
     }
 
     @Throws(IOException::class)
-    private fun stramToString(inputStrem: InputStream): String {
+    private fun streamToString(inputStrem: InputStream): String {
         val buffer = ByteArray(1024)
         val bigBuffer = ByteArrayOutputStream()
 
