@@ -27,8 +27,8 @@ class PokeListAdapter(context: Context, pokemon: List<Pokemon>): ArrayAdapter<Po
         }
 
         poke?.let {
-            Glide.with(context).load(poke.imagem).into(holder.imgPoke)
-            holder.txtNome.text = poke.nome
+            Glide.with(context).load(poke.coverUrl).into(holder.imgPoke)
+            holder.txtNome.text = poke.name
         }
         return view
     }

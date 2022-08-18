@@ -4,8 +4,10 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
-import android.util.Log
 import androidx.annotation.RequiresApi
+import com.google.gson.Gson
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.ByteArrayOutputStream
@@ -15,6 +17,7 @@ import java.lang.Exception
 import java.net.HttpURLConnection
 import java.net.URL
 import java.nio.charset.Charset
+import java.util.concurrent.TimeUnit
 
 object PokeHttp {
 
@@ -35,6 +38,35 @@ object PokeHttp {
         }
         connection.connect()
         return connection
+    }
+
+    fun loadPokemonGson(urlPokemon: String): Pokemon? {
+
+        val client = OkHttpClient.Builder()
+            .readTimeout(5, TimeUnit.SECONDS)
+            .connectTimeout(10, TimeUnit.SECONDS)
+            .build()
+
+        val request = Request.Builder()
+            .url(urlPokemon)
+            .build()
+
+        try {
+            val response = client.newCall(request).execute()
+            val json = response.body?.string()
+            val gson = Gson()
+
+            val publisher = gson.fromJson<Publisher>(json, Publisher::class.java)
+
+            val pokemon = gson.fromJson<Pokemon>(json, Pokemon::class.java)
+
+            pokemon.coverUrl = publisher.sprites.other.official_artwork.front_default
+
+            return pokemon
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        return null
     }
 
     //Verifica se o dispositivo está conectado a internet
@@ -67,15 +99,9 @@ object PokeHttp {
                 //Irá percorrer todas as url da lista para obter seu respectivo pokemon
                 for (element in urlListPokemon) {
                     try {
-                        val connection2 = connect(element)
-                        val response_code2 = connection2.responseCode
 
-                        if (response_code2 == HttpURLConnection.HTTP_OK) {
-                            val inputStream2 = connection2.inputStream
-                            val json2 = JSONObject(streamToString(inputStream2))
+                        pokemonList.add(loadPokemonGson(element)!!)
 
-                            pokemonList.add(readPokemonFromList(json2))
-                        }
                     } catch (e: Exception) {
                         e.printStackTrace()
                     }
@@ -97,7 +123,7 @@ object PokeHttp {
 
         val jsonResults = json.getJSONArray("results")
 
-        for (i in 0..12) {
+        for (i in 0..20) {
             val jsonPoke = jsonResults.getJSONObject(i)
             val pokeUrl = jsonPoke.getString("url")
 
@@ -105,18 +131,6 @@ object PokeHttp {
         }
 
         return urlListPokemon
-    }
-
-    //Carrega o pokemon a partir do json
-    @Throws(JSONException::class)
-    fun readPokemonFromList(json: JSONObject): Pokemon {
-        val jsonNome = json.getString("name")
-
-        val jsonSprite = json.getJSONObject("sprites").getJSONObject("other").getJSONObject("official-artwork").getString("front_default")
-
-        Log.i("HSV", jsonSprite)
-
-        return Pokemon(jsonNome.replaceFirstChar { it.uppercase() }, jsonSprite)
     }
 
     @Throws(IOException::class)

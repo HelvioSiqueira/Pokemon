@@ -4,15 +4,16 @@ import com.google.gson.annotations.SerializedName
 
 data class Pokemon(
     @SerializedName("name")
-    var nome: String = "",
+    var name: String = "",
     //var hp: Int = 0,
     //var attack: Int = 0,
     //var defense: Int = 0,
     //var specialAtack: Int = 0,
     //var specialDefense: Int = 0,
-    @SerializedName("sprites")
-    var imagem: Sprites
+    //var speed: Int = 0,
+    var coverUrl: String = ""
 
-) {
-    override fun toString() = nome
+    ) {
+    override fun toString() = name
 }
+
