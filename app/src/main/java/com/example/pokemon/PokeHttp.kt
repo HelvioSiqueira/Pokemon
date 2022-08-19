@@ -4,44 +4,18 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
-import android.util.Log
 import androidx.annotation.RequiresApi
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import org.json.JSONArray
-import org.json.JSONException
-import org.json.JSONObject
-import java.io.ByteArrayOutputStream
-import java.io.IOException
-import java.io.InputStream
 import java.lang.Exception
-import java.net.HttpURLConnection
-import java.net.URL
-import java.nio.charset.Charset
 import java.util.concurrent.TimeUnit
 
 object PokeHttp {
 
     val POKE_HTTP_URL = "https://pokeapi.co/api/v2/pokemon?limit=20&offset=0"
 
-    //Estabelece a coneção a partir da url recebida
-    @Throws(IOException::class)
-    private fun connect(urlAddress: String): HttpURLConnection {
-        val second = 100
-        val url = URL(urlAddress)
-
-        val connection = (url.openConnection() as HttpURLConnection).apply {
-            readTimeout = 10 * second
-            connectTimeout = 15 * second
-            requestMethod = "GET"
-            doInput = true
-            doOutput = false
-        }
-        connection.connect()
-        return connection
-    }
 
     fun loadPokemonGson(urlPokemon: String): Pokemon {
 
@@ -120,8 +94,6 @@ object PokeHttp {
                     e.printStackTrace()
                 }
             }
-
-
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -139,38 +111,4 @@ object PokeHttp {
         @SerializedName("results")
         var results: List<Url> = emptyList()
     )
-
-    //Carrega o url de todos os pokemon a partir de uma lista de json
-    @Throws(JSONException::class)
-    fun readUrlPokemon(json: JSONObject): List<String> {
-        val urlListPokemon = mutableListOf<String>()
-
-        val jsonResults = json.getJSONArray("results")
-
-        for (i in 0..20) {
-            val jsonPoke = jsonResults.getJSONObject(i)
-            val pokeUrl = jsonPoke.getString("url")
-
-            urlListPokemon.add(pokeUrl)
-        }
-
-        return urlListPokemon
-    }
-
-    @Throws(IOException::class)
-    private fun streamToString(inputStrem: InputStream): String {
-        val buffer = ByteArray(1024)
-        val bigBuffer = ByteArrayOutputStream()
-
-        var bytesRead: Int
-
-        while (true) {
-            bytesRead = inputStrem.read(buffer)
-
-            if (bytesRead == -1) break
-
-            bigBuffer.write(buffer, 0, bytesRead)
-        }
-        return String(bigBuffer.toByteArray(), Charset.forName("UTF-8"))
-    }
 }
