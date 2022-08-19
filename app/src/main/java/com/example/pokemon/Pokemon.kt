@@ -13,7 +13,7 @@ data class Pokemon(
     //var speed: Int = 0,
     var coverUrl: String = ""
 
-    ) {
+) {
     override fun toString() = name
 }
 

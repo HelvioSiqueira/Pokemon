@@ -1,6 +1,5 @@
 package com.example.pokemon
 
-import android.os.AsyncTask
 import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -10,17 +9,30 @@ import android.widget.ArrayAdapter
 import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
 import kotlinx.android.synthetic.main.pokemon_list.*
+import kotlinx.coroutines.*
+import kotlin.coroutines.CoroutineContext
 
-class PokeListFragment : Fragment() {
+class PokeListFragment : Fragment(), CoroutineScope {
 
-    private var asyncTask: PokeDownloadTask? = null
+    private lateinit var job: Job
+    private var downloadJob: Job? = null
+
     private val pokeList = mutableListOf<Pokemon>()
     private var adapter: ArrayAdapter<Pokemon>? = null
+
+    override val coroutineContext: CoroutineContext
+        get() = Dispatchers.Main + job
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         retainInstance = true
+        job = Job()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        job.cancel()
     }
 
     override fun onCreateView(
@@ -42,14 +54,14 @@ class PokeListFragment : Fragment() {
         if (pokeList.isNotEmpty()){
             showProgress(false)
         } else {
-            if (asyncTask == null){
+            if (downloadJob == null){
                 if(PokeHttp.hasConnection(requireContext())){
                     startDownloadJson()
                 } else {
                     progressBar.visibility = View.GONE
                     txtMessage.setText(R.string.error_no_connection)
                 }
-            } else if(asyncTask?.status == AsyncTask.Status.RUNNING){
+            } else if(downloadJob?.isActive == true){
                 showProgress(true)
             }
         }
@@ -65,40 +77,27 @@ class PokeListFragment : Fragment() {
     }
 
     private fun startDownloadJson(){
-        if(asyncTask?.status != AsyncTask.Status.RUNNING){
-            asyncTask = PokeDownloadTask()
-            asyncTask?.execute()
+        downloadJob = launch {
+            showProgress(true)
+
+            val pokeTask = withContext(Dispatchers.IO){
+                PokeHttp.loadPokemon()
+            }
+
+            updatePokeList(pokeTask)
+            showProgress(false)
         }
     }
 
     private fun updatePokeList(result: List<Pokemon>?){
         if (result != null){
             pokeList.clear()
-
-
             pokeList.addAll(result)
         } else {
             txtMessage.setText(R.string.error_load_books)
         }
 
         adapter?.notifyDataSetChanged()
-        asyncTask = null
-    }
-
-    inner class PokeDownloadTask: AsyncTask<Void, Void, List<Pokemon>?>(){
-        override fun onPreExecute() {
-            super.onPreExecute()
-            showProgress(true)
-        }
-
-        override fun doInBackground(vararg string: Void?): List<Pokemon>? {
-            return PokeHttp.loadPokemon()
-        }
-
-        override fun onPostExecute(pokemon: List<Pokemon>?) {
-            super.onPostExecute(pokemon)
-            showProgress(false)
-            updatePokeList(pokemon)
-        }
+        downloadJob = null
     }
 }

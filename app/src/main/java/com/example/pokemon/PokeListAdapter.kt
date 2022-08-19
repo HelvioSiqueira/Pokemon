@@ -33,6 +33,7 @@ class PokeListAdapter(context: Context, pokemon: List<Pokemon>): ArrayAdapter<Po
         return view
     }
 
+
     internal class ViewHolder(view: View){
         var imgPoke: ImageView = view.imgPoke
         var txtNome: TextView = view.txtTitulo
