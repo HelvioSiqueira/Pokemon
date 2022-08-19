@@ -4,10 +4,13 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import com.google.gson.Gson
+import com.google.gson.annotations.SerializedName
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.ByteArrayOutputStream
@@ -21,7 +24,7 @@ import java.util.concurrent.TimeUnit
 
 object PokeHttp {
 
-    val POKE_HTTP_URL = "https://pokeapi.co/api/v2/pokemon?limit=100000&offset=0"
+    val POKE_HTTP_URL = "https://pokeapi.co/api/v2/pokemon?limit=20&offset=0"
 
     //Estabelece a coneção a partir da url recebida
     @Throws(IOException::class)
@@ -40,7 +43,7 @@ object PokeHttp {
         return connection
     }
 
-    fun loadPokemonGson(urlPokemon: String): Pokemon? {
+    fun loadPokemonGson(urlPokemon: String): Pokemon {
 
         val client = OkHttpClient.Builder()
             .readTimeout(5, TimeUnit.SECONDS)
@@ -66,7 +69,7 @@ object PokeHttp {
         } catch (e: Exception) {
             e.printStackTrace()
         }
-        return null
+        return Pokemon()
     }
 
     //Verifica se o dispositivo está conectado a internet
@@ -81,33 +84,44 @@ object PokeHttp {
     }
 
     //Função principal que faz a conexãoe obtem o json
-    fun loadPokemon(): List<Pokemon> {
+    fun loadPokemon(): List<Pokemon>? {
         val pokemonList = mutableListOf<Pokemon>()
-        val urlListPokemon: List<String>
+        val urlListPokemon = arrayListOf<String>()
+
+        val client = OkHttpClient.Builder()
+            .readTimeout(5, TimeUnit.SECONDS)
+            .connectTimeout(10, TimeUnit.SECONDS)
+            .build()
+
+        val request = Request.Builder()
+            .url(POKE_HTTP_URL)
+            .build()
 
         //Esse primeiro try tenta obter a lista de urls de todos os pokemon
         try {
-            val connection = connect(POKE_HTTP_URL)
-            val response_code = connection.responseCode
+            val response = client.newCall(request).execute()
 
-            if (response_code == HttpURLConnection.HTTP_OK) {
-                val inputStream = connection.inputStream
-                val json = JSONObject(streamToString(inputStream))
+            val json = response.body?.string()
 
-                urlListPokemon = readUrlPokemon(json)
+            val gson = Gson()
 
-                //Irá percorrer todas as url da lista para obter seu respectivo pokemon
-                for (element in urlListPokemon) {
-                    try {
+            val results = gson.fromJson<Results>(json, Results::class.java)
 
-                        pokemonList.add(loadPokemonGson(element)!!)
-
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                    }
-                }
-
+            //Adiciona as urls no urlListPokemon
+            results.results.forEach {
+                urlListPokemon.add(it.url)
             }
+
+            //Irá percorrer todas as url da lista para obter seu respectivo pokemon
+            for (element in urlListPokemon) {
+                try {
+                    pokemonList.add(loadPokemonGson(element))
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+
+
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -115,6 +129,16 @@ object PokeHttp {
         //Retorna uma lista de pokemon(Por enquanto só o nome)
         return pokemonList
     }
+
+    data class Url(
+        @SerializedName("url")
+        var url: String = ""
+    )
+
+    data class Results(
+        @SerializedName("results")
+        var results: List<Url> = emptyList()
+    )
 
     //Carrega o url de todos os pokemon a partir de uma lista de json
     @Throws(JSONException::class)
