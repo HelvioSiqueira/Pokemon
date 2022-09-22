@@ -1,6 +1,7 @@
 package com.example.pokemon
 
 import android.content.Context
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -24,18 +25,22 @@ class PokeListAdapter(context: Context, pokemon: List<Pokemon>): ArrayAdapter<Po
         } else {
             view = convertView
             holder = view.tag as ViewHolder
+            Log.d("HSV", "Ao rolar irá carregar mais pokemon")
+
+            addAll()
         }
 
         poke?.let {
             Glide.with(context).load(poke.coverUrl).into(holder.imgPoke)
             holder.txtNome.text = poke.name
+            holder.txtHp.text = poke.hp.toString()
         }
         return view
     }
 
-
     internal class ViewHolder(view: View){
         var imgPoke: ImageView = view.imgPoke
         var txtNome: TextView = view.txtTitulo
+        var txtHp: TextView = view.txtHp
     }
 }

@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
@@ -14,8 +15,7 @@ import java.util.concurrent.TimeUnit
 
 object PokeHttp {
 
-    val POKE_HTTP_URL = "https://pokeapi.co/api/v2/pokemon?limit=20&offset=0"
-
+    val POKE_HTTP_URL = "https://pokeapi.co/api/v2/pokemon?limit=10&offset=0"
 
     fun loadPokemonGson(urlPokemon: String): Pokemon {
 
@@ -38,8 +38,17 @@ object PokeHttp {
             val pokemon = gson.fromJson<Pokemon>(json, Pokemon::class.java)
 
             pokemon.coverUrl = publisher.sprites.other.official_artwork.front_default
+            pokemon.hp = publisher.stats[0].base_stat
+            pokemon.attack = publisher.stats[1].base_stat
+            pokemon.defense = publisher.stats[2].base_stat
+            pokemon.specialAtack = publisher.stats[3].base_stat
+            pokemon.specialDefense = publisher.stats[4].base_stat
+            pokemon.speed = publisher.stats[5].base_stat
+
+            Log.d("HSV", pokemon.attack.toString())
 
             return pokemon
+
         } catch (e: Exception) {
             e.printStackTrace()
         }

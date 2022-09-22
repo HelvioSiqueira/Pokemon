@@ -27,4 +27,14 @@
         app:layout_constraintBottom_toBottomOf="@+id/imgPoke"
         tools:text="Nome"/>
 
+    <TextView
+        android:id="@+id/txtHp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="22sp"
+        app:layout_constraintBottom_toBottomOf="@+id/txtTitulo"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/txtTitulo"
+        app:layout_constraintTop_toTopOf="@+id/txtTitulo" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
