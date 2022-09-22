@@ -33,7 +33,7 @@ class PokeListAdapter(context: Context, pokemon: List<Pokemon>): ArrayAdapter<Po
         poke?.let {
             Glide.with(context).load(poke.coverUrl).into(holder.imgPoke)
             holder.txtNome.text = poke.name
-            holder.txtHp.text = poke.hp.toString()
+            holder.txtHp.text = poke.status[0].base_stat.toString()
         }
         return view
     }

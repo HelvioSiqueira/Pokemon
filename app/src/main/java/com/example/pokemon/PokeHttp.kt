@@ -38,14 +38,9 @@ object PokeHttp {
             val pokemon = gson.fromJson<Pokemon>(json, Pokemon::class.java)
 
             pokemon.coverUrl = publisher.sprites.other.official_artwork.front_default
-            pokemon.hp = publisher.stats[0].base_stat
-            pokemon.attack = publisher.stats[1].base_stat
-            pokemon.defense = publisher.stats[2].base_stat
-            pokemon.specialAtack = publisher.stats[3].base_stat
-            pokemon.specialDefense = publisher.stats[4].base_stat
-            pokemon.speed = publisher.stats[5].base_stat
 
-            Log.d("HSV", pokemon.attack.toString())
+
+            Log.d("HSV", pokemon.status.toString())
 
             return pokemon
 
